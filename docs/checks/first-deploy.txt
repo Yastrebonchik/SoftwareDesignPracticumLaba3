@@ -1,0 +1,106 @@
+PLAY [Check managed servers] ***************************************************
+
+TASK [Wait for SSH] ************************************************************
+ok: [app]
+ok: [nginx]
+
+TASK [Gather server facts] *****************************************************
+ok: [nginx]
+ok: [app]
+
+TASK [Verify supported operating system and memory] ****************************
+ok: [app] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+ok: [nginx] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY [Deploy notes application] ************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [app]
+
+TASK [app : Check database settings] *******************************************
+ok: [app]
+
+TASK [app : Check package indexes] *********************************************
+ok: [app]
+
+TASK [app : Install Java runtime] **********************************************
+changed: [app]
+
+TASK [app : Create application user] *******************************************
+changed: [app]
+
+TASK [app : Create application directories] ************************************
+changed: [app] => (item=/opt/notes)
+changed: [app] => (item=/opt/notes/run)
+changed: [app] => (item=/opt/notes/log)
+
+TASK [app : Deploy application JAR] ********************************************
+changed: [app]
+
+TASK [app : Configure application environment] *********************************
+changed: [app]
+
+TASK [app : Deploy application control script] *********************************
+changed: [app]
+
+TASK [app : Configure application startup after container restart] *************
+changed: [app]
+
+TASK [app : Wait for database port] ********************************************
+ok: [app]
+
+TASK [app : Apply application changes] *****************************************
+
+RUNNING HANDLER [app : Restart notes application] ******************************
+changed: [app]
+
+TASK [app : Ensure application is running] *************************************
+ok: [app]
+
+TASK [app : Verify application and database connection] ************************
+FAILED - RETRYING: [app]: Verify application and database connection (40 retries left).
+ok: [app]
+
+PLAY [Configure reverse proxy] *************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [nginx]
+
+TASK [nginx : Check package indexes] *******************************************
+ok: [nginx]
+
+TASK [nginx : Install Nginx] ***************************************************
+changed: [nginx]
+
+TASK [nginx : Configure reverse proxy] *****************************************
+changed: [nginx]
+
+TASK [nginx : Enable reverse proxy site] ***************************************
+ok: [nginx]
+
+TASK [nginx : Validate Nginx configuration] ************************************
+ok: [nginx]
+
+TASK [nginx : Configure Nginx startup after container restart] *****************
+changed: [nginx]
+
+TASK [nginx : Ensure Nginx is running] *****************************************
+changed: [nginx]
+
+TASK [nginx : Apply Nginx changes] *********************************************
+
+RUNNING HANDLER [nginx : Reload nginx] *****************************************
+changed: [nginx]
+
+TASK [nginx : Verify application through Nginx] ********************************
+ok: [nginx]
+
+PLAY RECAP *********************************************************************
+app                        : ok=17   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+nginx                      : ok=13   changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0

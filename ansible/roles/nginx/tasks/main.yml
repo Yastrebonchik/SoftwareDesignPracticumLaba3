@@ -1,0 +1,58 @@
+- name: Check package indexes
+  ansible.builtin.find:
+    paths: /var/lib/apt/lists
+    patterns: '*_Packages*'
+  register: nginx_package_indexes
+
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: true
+    cache_valid_time: "{{ 3600 if nginx_package_indexes.matched > 0 else 0 }}"
+    policy_rc_d: 101
+
+- name: Configure reverse proxy
+  ansible.builtin.template:
+    src: notes.conf.j2
+    dest: /etc/nginx/sites-available/default
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Enable reverse proxy site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default
+    state: link
+  notify: Reload nginx
+
+- name: Validate Nginx configuration
+  ansible.builtin.command: nginx -t
+  changed_when: false
+
+- name: Configure Nginx startup after container restart
+  ansible.builtin.copy:
+    content: |
+      #!/bin/sh
+      set -eu
+      /usr/sbin/nginx -t
+      service nginx start
+    dest: /usr/local/bin/lab-start
+    mode: '0755'
+
+- name: Ensure Nginx is running
+  ansible.builtin.service:
+    name: nginx
+    state: started
+
+- name: Apply Nginx changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Verify application through Nginx
+  ansible.builtin.uri:
+    url: http://127.0.0.1/health
+    return_content: true
+  register: nginx_health
+  until: nginx_health.status == 200 and nginx_health.json.status == 'UP'
+  retries: 20
+  delay: 3
