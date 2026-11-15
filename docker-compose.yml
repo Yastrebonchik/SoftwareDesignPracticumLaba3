@@ -1,0 +1,87 @@
+name: devops-lab3
+
+services:
+  ansible:
+    build:
+      context: .
+      dockerfile: docker/master/Dockerfile
+    init: true
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Create .env from .env.example}
+      POSTGRES_USER: ${POSTGRES_USER:?Create .env from .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - ./.ssh:/keys:ro
+    networks:
+      - lab
+    depends_on:
+      app:
+        condition: service_started
+      nginx:
+        condition: service_started
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "test", "-s", "/root/.ssh/id_ed25519"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+    init: true
+    volumes:
+      - ./.ssh/id_ed25519.pub:/run/authorized_key:ro
+    networks:
+      - lab
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--max-time", "4", "http://127.0.0.1:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+    init: true
+    ports:
+      - "${HTTP_PORT:-8083}:80"
+    volumes:
+      - ./.ssh/id_ed25519.pub:/run/authorized_key:ro
+    networks:
+      - lab
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--max-time", "4", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+  db:
+    image: postgres:17-alpine@sha256:266d3c257594e195b309ae9d1805e54c788f1d7b375f56bf6c367aac6c917e7b
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Create .env from .env.example}
+      POSTGRES_USER: ${POSTGRES_USER:?Create .env from .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - lab
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+networks:
+  lab:
+
+volumes:
+  pgdata:

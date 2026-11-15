@@ -1,0 +1,21 @@
+<!doctype html><html lang="ru"><meta charset="utf-8">
+<title>Лабораторная №3 — результаты проверки</title>
+<style>
+body { margin: 0; background: #eef2f6; color: #1b2b3d; font: 16px/1.5 system-ui, sans-serif; }
+main { max-width: 1080px; margin: 24px auto; padding: 28px; background: white; border-radius: 14px; }
+h1 { margin: 0; font-size: 27px; } h2 { font-size: 19px; margin: 25px 0 10px; }
+p { margin: 8px 0; color: #536477; } table { border-collapse: collapse; width: 100%; }
+th,td { text-align: left; border-bottom: 1px solid #e4e9ef; padding: 9px; }
+th { background: #f4f6f9; } .ok { color: #137445; font-weight: 700; }
+pre { padding: 16px; background: #142438; color: #def4e8; border-radius: 8px; font-size: 13px; overflow: auto; }
+li { margin: 5px 0; } small { color: #63748a; }
+</style><main>
+<h1>Лабораторная №3 · Ansible</h1>
+<p>Фактические результаты проверки на Ubuntu VM · 14.11.2026 01:27 МСК</p>
+<h2>Контейнеры Docker Compose</h2>
+<table><tr><th>Сервис</th><th>Контейнер</th><th>Состояние</th><th>Порт хоста</th></tr><tr><td>ansible</td><td>devops-lab3-ansible-1</td><td class="ok">healthy</td><td>—</td></tr><tr><td>app</td><td>devops-lab3-app-1</td><td class="ok">healthy</td><td>—</td></tr><tr><td>db</td><td>devops-lab3-db-1</td><td class="ok">healthy</td><td>—</td></tr><tr><td>nginx</td><td>devops-lab3-nginx-1</td><td class="ok">healthy</td><td>8083 → 80/tcp</td></tr></table>
+<h2>Повторное применение playbook</h2><pre>app                        : ok=16   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+nginx                      : ok=12   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0</pre>
+<h2 class="ok">ALL CHECKS PASSED</h2><ul><li>four healthy containers, one network, only Nginx publishes a port, one non-root JVM</li><li>second playbook run has changed=0; application and Nginx PIDs are unchanged</li><li>CRUD, validation and actual storage in PostgreSQL</li><li>all services recover after container restart; note is preserved</li><li>deployment to recreated servers; PostgreSQL data survives</li><li>database outage is detected; application recovers</li></ul>
+<small>Источник: docker compose ps, docker inspect, журналы scripts/verify.py и Ansible.</small>
+</main></html>

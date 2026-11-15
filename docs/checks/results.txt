@@ -1,0 +1,213 @@
+
+playbook: site.yml
+PASS: four healthy containers, one network, only Nginx publishes a port, one non-root JVM
+PASS: second playbook run has changed=0; application and Nginx PIDs are unchanged
+PASS: CRUD, validation and actual storage in PostgreSQL
+ Container devops-lab3-nginx-1 Restarting 
+ Container devops-lab3-app-1 Restarting 
+ Container devops-lab3-db-1 Restarting 
+ Container devops-lab3-ansible-1 Restarting 
+ Container devops-lab3-nginx-1 Started 
+ Container devops-lab3-ansible-1 Started 
+ Container devops-lab3-app-1 Started 
+ Container devops-lab3-db-1 Started 
+ Container devops-lab3-db-1 Running 
+ Container devops-lab3-ansible-1 Running 
+ Container devops-lab3-app-1 Running 
+ Container devops-lab3-nginx-1 Running 
+ Container devops-lab3-db-1 Waiting 
+ Container devops-lab3-db-1 Healthy 
+ Container devops-lab3-nginx-1 Waiting 
+ Container devops-lab3-db-1 Waiting 
+ Container devops-lab3-ansible-1 Waiting 
+ Container devops-lab3-app-1 Waiting 
+ Container devops-lab3-ansible-1 Healthy 
+ Container devops-lab3-app-1 Healthy 
+ Container devops-lab3-nginx-1 Healthy 
+ Container devops-lab3-db-1 Healthy 
+PASS: all services recover after container restart; note is preserved
+ Container devops-lab3-ansible-1 Stopping 
+ Container devops-lab3-ansible-1 Stopped 
+ Container devops-lab3-ansible-1 Removing 
+ Container devops-lab3-ansible-1 Removed 
+ Container devops-lab3-nginx-1 Stopping 
+ Container devops-lab3-app-1 Stopping 
+ Container devops-lab3-nginx-1 Stopped 
+ Container devops-lab3-nginx-1 Removing 
+ Container devops-lab3-app-1 Stopped 
+ Container devops-lab3-app-1 Removing 
+ Container devops-lab3-nginx-1 Removed 
+ Container devops-lab3-app-1 Removed 
+ Container devops-lab3-db-1 Stopping 
+ Container devops-lab3-db-1 Stopped 
+ Container devops-lab3-db-1 Removing 
+ Container devops-lab3-db-1 Removed 
+ Network devops-lab3_lab Removing 
+ Network devops-lab3_lab Removed 
+ Network devops-lab3_lab Creating 
+ Network devops-lab3_lab Created 
+ Container devops-lab3-nginx-1 Creating 
+ Container devops-lab3-db-1 Creating 
+ Container devops-lab3-db-1 Created 
+ Container devops-lab3-app-1 Creating 
+ Container devops-lab3-nginx-1 Created 
+ Container devops-lab3-app-1 Created 
+ Container devops-lab3-ansible-1 Creating 
+ Container devops-lab3-ansible-1 Created 
+ Container devops-lab3-db-1 Starting 
+ Container devops-lab3-nginx-1 Starting 
+ Container devops-lab3-db-1 Started 
+ Container devops-lab3-db-1 Waiting 
+ Container devops-lab3-nginx-1 Started 
+ Container devops-lab3-db-1 Healthy 
+ Container devops-lab3-app-1 Starting 
+ Container devops-lab3-app-1 Started 
+ Container devops-lab3-ansible-1 Starting 
+ Container devops-lab3-ansible-1 Started 
+PLAY [Check managed servers] ***************************************************
+
+TASK [Wait for SSH] ************************************************************
+ok: [app]
+ok: [nginx]
+
+TASK [Gather server facts] *****************************************************
+ok: [nginx]
+ok: [app]
+
+TASK [Verify supported operating system and memory] ****************************
+ok: [app] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+ok: [nginx] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY [Deploy notes application] ************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [app]
+
+TASK [app : Check database settings] *******************************************
+ok: [app]
+
+TASK [app : Check package indexes] *********************************************
+ok: [app]
+
+TASK [app : Install Java runtime] **********************************************
+changed: [app]
+
+TASK [app : Create application user] *******************************************
+changed: [app]
+
+TASK [app : Create application directories] ************************************
+changed: [app] => (item=/opt/notes)
+changed: [app] => (item=/opt/notes/run)
+changed: [app] => (item=/opt/notes/log)
+
+TASK [app : Deploy application JAR] ********************************************
+changed: [app]
+
+TASK [app : Configure application environment] *********************************
+changed: [app]
+
+TASK [app : Deploy application control script] *********************************
+changed: [app]
+
+TASK [app : Configure application startup after container restart] *************
+changed: [app]
+
+TASK [app : Wait for database port] ********************************************
+ok: [app]
+
+TASK [app : Apply application changes] *****************************************
+
+RUNNING HANDLER [app : Restart notes application] ******************************
+changed: [app]
+
+TASK [app : Ensure application is running] *************************************
+ok: [app]
+
+TASK [app : Verify application and database connection] ************************
+FAILED - RETRYING: [app]: Verify application and database connection (40 retries left).
+ok: [app]
+
+PLAY [Configure reverse proxy] *************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [nginx]
+
+TASK [nginx : Check package indexes] *******************************************
+ok: [nginx]
+
+TASK [nginx : Install Nginx] ***************************************************
+changed: [nginx]
+
+TASK [nginx : Configure reverse proxy] *****************************************
+changed: [nginx]
+
+TASK [nginx : Enable reverse proxy site] ***************************************
+ok: [nginx]
+
+TASK [nginx : Validate Nginx configuration] ************************************
+ok: [nginx]
+
+TASK [nginx : Configure Nginx startup after container restart] *****************
+changed: [nginx]
+
+TASK [nginx : Ensure Nginx is running] *****************************************
+changed: [nginx]
+
+TASK [nginx : Apply Nginx changes] *********************************************
+
+RUNNING HANDLER [nginx : Reload nginx] *****************************************
+changed: [nginx]
+
+TASK [nginx : Verify application through Nginx] ********************************
+ok: [nginx]
+
+PLAY RECAP *********************************************************************
+app                        : ok=17   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+nginx                      : ok=13   changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+ Container devops-lab3-ansible-1 Running 
+ Container devops-lab3-app-1 Running 
+ Container devops-lab3-nginx-1 Running 
+ Container devops-lab3-db-1 Running 
+ Container devops-lab3-db-1 Waiting 
+ Container devops-lab3-db-1 Healthy 
+ Container devops-lab3-nginx-1 Waiting 
+ Container devops-lab3-db-1 Waiting 
+ Container devops-lab3-ansible-1 Waiting 
+ Container devops-lab3-app-1 Waiting 
+ Container devops-lab3-db-1 Healthy 
+ Container devops-lab3-app-1 Healthy 
+ Container devops-lab3-ansible-1 Healthy 
+ Container devops-lab3-nginx-1 Healthy 
+PASS: deployment to recreated servers; PostgreSQL data survives
+ Container devops-lab3-db-1 Stopping 
+ Container devops-lab3-db-1 Stopped 
+ Container devops-lab3-db-1 Starting 
+ Container devops-lab3-db-1 Started 
+PASS: database outage is detected; application recovers
+ Container devops-lab3-ansible-1 Running 
+ Container devops-lab3-app-1 Running 
+ Container devops-lab3-nginx-1 Running 
+ Container devops-lab3-db-1 Running 
+ Container devops-lab3-db-1 Waiting 
+ Container devops-lab3-db-1 Healthy 
+ Container devops-lab3-app-1 Waiting 
+ Container devops-lab3-nginx-1 Waiting 
+ Container devops-lab3-db-1 Waiting 
+ Container devops-lab3-ansible-1 Waiting 
+ Container devops-lab3-db-1 Healthy 
+ Container devops-lab3-nginx-1 Healthy 
+ Container devops-lab3-ansible-1 Healthy 
+ Container devops-lab3-app-1 Healthy 
+PASS: four healthy containers, one network, only Nginx publishes a port, one non-root JVM
+NAME                    IMAGE                                                                                        COMMAND                  SERVICE   CREATED              STATUS                        PORTS
+devops-lab3-ansible-1   devops-lab3-ansible                                                                          "/usr/local/bin/mast…"   ansible   About a minute ago   Up About a minute (healthy)   
+devops-lab3-app-1       devops-lab3-app                                                                              "/usr/local/bin/node…"   app       About a minute ago   Up About a minute (healthy)   22/tcp
+devops-lab3-db-1        postgres:17-alpine@sha256:266d3c257594e195b309ae9d1805e54c788f1d7b375f56bf6c367aac6c917e7b   "docker-entrypoint.s…"   db        About a minute ago   Up 8 seconds (healthy)        5432/tcp
+devops-lab3-nginx-1     devops-lab3-nginx                                                                            "/usr/local/bin/node…"   nginx     About a minute ago   Up About a minute (healthy)   22/tcp, 0.0.0.0:8083->80/tcp, [::]:8083->80/tcp
+ALL CHECKS PASSED

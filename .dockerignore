@@ -1,0 +1,7 @@
+.git
+.env
+.ssh
+app/target
+**/__pycache__
+docs
+/README.local.md

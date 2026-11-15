@@ -1,0 +1,5 @@
+NAME                    SERVICE   STATUS                        PORTS
+devops-lab3-ansible-1   ansible   Up About a minute (healthy)   
+devops-lab3-app-1       app       Up About a minute (healthy)   22/tcp
+devops-lab3-db-1        db        Up 34 seconds (healthy)       5432/tcp
+devops-lab3-nginx-1     nginx     Up About a minute (healthy)   22/tcp, 0.0.0.0:8083->80/tcp, [::]:8083->80/tcp

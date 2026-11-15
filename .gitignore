@@ -1,0 +1,6 @@
+.env
+.ssh/
+app/target/
+__pycache__/
+*.retry
+/README.local.md

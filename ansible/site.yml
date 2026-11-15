@@ -1,0 +1,28 @@
+- name: Check managed servers
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Wait for SSH
+      ansible.builtin.wait_for_connection:
+        timeout: 120
+
+    - name: Gather server facts
+      ansible.builtin.setup:
+
+    - name: Verify supported operating system and memory
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['distribution'] == 'Ubuntu'
+          - ansible_facts['distribution_version'] == '24.04'
+          - ansible_facts['memtotal_mb'] >= 512
+        fail_msg: Ubuntu 24.04 with at least 512 MiB RAM is required
+
+- name: Deploy notes application
+  hosts: appservers
+  roles:
+    - app
+
+- name: Configure reverse proxy
+  hosts: webservers
+  roles:
+    - nginx

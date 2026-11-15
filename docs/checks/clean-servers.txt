@@ -1,0 +1,4 @@
+Before Ansible deployment
+PASS: nginx is not installed
+PASS: Java is not installed
+PASS: application is not deployed

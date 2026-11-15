@@ -1,0 +1,100 @@
+- name: Check database settings
+  ansible.builtin.assert:
+    that:
+      - db_name | length > 0
+      - db_user | length > 0
+      - db_password | length > 0
+  no_log: true
+
+- name: Check package indexes
+  ansible.builtin.find:
+    paths: /var/lib/apt/lists
+    patterns: '*_Packages*'
+  register: app_package_indexes
+
+- name: Install Java runtime
+  ansible.builtin.apt:
+    name: openjdk-21-jre-headless
+    state: present
+    update_cache: true
+    cache_valid_time: "{{ 3600 if app_package_indexes.matched > 0 else 0 }}"
+
+- name: Create application user
+  ansible.builtin.user:
+    name: notes
+    system: true
+    create_home: false
+    home: /opt/notes
+    shell: /usr/sbin/nologin
+
+- name: Create application directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: notes
+    group: notes
+    mode: '0750'
+  loop:
+    - /opt/notes
+    - /opt/notes/run
+    - /opt/notes/log
+
+- name: Deploy application JAR
+  ansible.builtin.copy:
+    src: /artifacts/app.jar
+    dest: /opt/notes/app.jar
+    owner: notes
+    group: notes
+    mode: '0640'
+  notify: Restart notes application
+
+- name: Configure application environment
+  ansible.builtin.template:
+    src: app.env.j2
+    dest: /opt/notes/app.env
+    owner: notes
+    group: notes
+    mode: '0600'
+  no_log: true
+  notify: Restart notes application
+
+- name: Deploy application control script
+  ansible.builtin.copy:
+    src: app.sh
+    dest: /opt/notes/app.sh
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Restart notes application
+
+- name: Configure application startup after container restart
+  ansible.builtin.copy:
+    content: |
+      #!/bin/sh
+      set -eu
+      exec runuser -u notes -- /opt/notes/app.sh start
+    dest: /usr/local/bin/lab-start
+    mode: '0755'
+
+- name: Wait for database port
+  ansible.builtin.wait_for:
+    host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    timeout: 120
+
+- name: Apply application changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure application is running
+  ansible.builtin.command: runuser -u notes -- /opt/notes/app.sh start
+  register: app_start
+  changed_when: "'STARTED' in app_start.stdout"
+
+- name: Verify application and database connection
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ app_port }}/health"
+    return_content: true
+  register: app_health
+  until: app_health.status == 200 and app_health.json.status == 'UP'
+  retries: 40
+  delay: 3
